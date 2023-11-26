@@ -1,0 +1,39 @@
+#!/bin/bash
+
+source $1
+
+while read -r line; do
+    case $line in
+        # UP*)
+        #     up="%{B$aaabg}   ${line:2}   %{B-}"
+        #     ;;
+        WS*)
+            ws="%{B$aaabg}   ${line:2}    %{F- B-}" # add F- to reset the color of the fg
+            ;;
+        MS*)
+            ms="%{B$aabg}   %{F$col3}music %{F$col2}- %{F$fg}${line:2}   %{F- B-}"
+            ;;
+        NOC*)
+            noc="%{B$abg}  %{F$col2}# %{F$fg}${line:3}  %{F- B-}"
+            ;;
+        CLS*)
+            cls="   ${line:3}"
+            ;;
+        # AWIN*)
+        #     awin="   ${line:4}"
+        #     ;;
+        VOL*)
+            vol="%{B$abg}  %{F$col2}vol  %{F$fg}${line:3}  %{F- B-}"
+            ;; 
+        BAT*)
+            bat="%{B$aabg}  %{F$col3}hp %{F$fg}${line:3}  %{F- B-}"
+            ;; 
+        DAT*)
+            dat="%{B$aaabg}   ${line:3}   %{B-}"
+            ;;
+    esac
+
+    # return
+    echo -e "%{l}$up$ws$ms$noc%{c}$awin$cls%{r}$vol$bat$dat"
+done
+

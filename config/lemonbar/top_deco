@@ -1,0 +1,42 @@
+#!/bin/bash
+
+rdir="$HOME/.config/lemonbar"
+conf="$rdir/conf"
+
+cd $rdir
+source $conf
+
+h=20
+arr=({1..5})
+
+lemonade() {
+    while true; do
+        for _i in ${arr[@]}; do
+            buff+="%{B$col0}"
+            buff+="                      "
+
+            buff+="%{B$col1}"
+            buff+="                      "
+            
+            buff+="%{B$col2}"
+            buff+="                      "
+            
+            buff+="%{B$col3}"
+            buff+="                      "
+        done
+        
+        echo "$buff"
+        sleep 30m
+    done
+}
+
+lemonade | lemonbar \
+    -g x${h}x0x0 \
+    -f $font \
+    -p \
+    -B $bg \
+    -F $fg \
+    -U $fg
+
+
+

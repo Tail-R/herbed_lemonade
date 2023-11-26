@@ -1,0 +1,33 @@
+#include ".Xresources.d/themes/witch"
+! #include ".Xresources.d/themes/sugar"
+
+!! urxvt
+URxvt.geometry:             96x32
+URxvt.scrollBar:            false
+URxvt.cursorBlink:          true
+URxvt.cursorUnderline:      true
+URxvt.saveLines:            4096
+URxvt.internalBorder:       40
+URxvt.fading:               0
+
+URxvt.font: xft:azukifontB:size=12, \
+            xft:DejaVu Sans, \
+            xft:SauceCodePro Nerd Font Mono
+
+xft.antialias: true
+
+URxvt.letterSpace:      0
+URxvt.lineSpace:        0
+
+
+!! Xterm
+XTerm*locale:       true
+XTerm*faceName:     monospace:size=14
+XTerm*saveLines:    1024
+
+! XTerm*scrollBar:      true
+! XTerm*rightScrollBar: true
+
+! Colors
+! XTerm*reverseVideo: on
+
