@@ -8,6 +8,7 @@
 # - wmctrl
 # - playerctl
 # - pactl
+# - pamixer
 
 # todo: modularize the fifo loop
 
