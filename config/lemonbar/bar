@@ -1,6 +1,14 @@
 #!/bin/bash
 
-# dependencies: font, lemonbar-xft-git(AUR), xprop, xdotool, wmctrl
+# dependencies:
+# - font
+# - lemonbar-xft-git(AUR)
+# - xprop
+# - xdotool
+# - wmctrl
+# - playerctl
+# - pactl
+
 # todo: modularize the fifo loop
 
 pkill lemonbar
