@@ -1,5 +1,4 @@
 #include ".Xresources.d/themes/witch"
-! #include ".Xresources.d/themes/sugar"
 
 !! urxvt
 URxvt.geometry:             96x32
