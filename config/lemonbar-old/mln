@@ -1,0 +1,9 @@
+#!/bin/bash
+
+lines="%{c}hello world"
+
+echo "$lines" | lemonbar -p \
+    -g 200x1200x100x100 \
+    -f "azukifontB:size=20" \
+    -o -200
+

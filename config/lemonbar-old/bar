@@ -1,0 +1,155 @@
+#!/bin/bash
+
+# dependencies: font, lemonbar-xft-git(AUR), xprop, xdotool, wmctrl
+# todo: madularize the fifo loop
+
+pkill lemonbar
+
+rdir="$HOME/.config/lemonbar"
+conf="$rdir/conf"
+elog="$rdir/log"
+fifo=$HOME/.cache/lemon.fifo
+
+cd $rdir
+source $conf
+
+test -e $elog && rm -f $elog
+test -e $fifo && rm -f $fifo
+mkfifo $fifo
+
+# # uptime
+# while true; do
+#     up=$(scripts/up)
+#     echo "UP$up" > $fifo
+#     sleep 30
+# done &
+
+# workspaces
+ws_num=$(xprop -root _NET_NUMBER_OF_DESKTOPS | awk '{print $3}')
+
+is_occu() {
+    wmctrl -l | awk '{print $2}' | sort | uniq | while read -r exist; do
+        if [ "$exist" == "$1" ]; then
+            echo "0"
+            break
+        fi
+    done
+}
+
+xprop -spy -root _NET_CURRENT_DESKTOP | while read -r; do 
+    wmctrl -d | awk '{print $1 " " $2 " " $9}' | while read -r num stat name; do
+        stat_str="%{F$fg}" 
+        
+        if [ "$(is_occu $num)" == "0" ]; then
+            stat_str="%{F$col3}"
+        fi
+
+        if [ "$stat" == "*" ]; then # "*" mean active
+            stat_str="%{F$col2}"
+        fi
+
+        buff+="$stat_str $name "
+
+        if [ "$num" == "$(( $ws_num - 1 ))" ]; then
+            echo "WS$buff" > $fifo
+        fi
+    done
+done &
+
+# music
+echo "MSoffline" > $fifo & # as init
+
+playerctl --follow status | while read -r line; do
+    case "$line" in
+        "Playing")
+            title=$(playerctl metadata --format '{{title}}')
+            
+            if [ $(echo $title | wc -m) -gt 10 ]; then
+                echo "MS$(echo ${title:0:7})..." > $fifo
+            else
+                echo "MS$(echo ${title:0:10})" > $fifo
+            fi
+
+            ;;
+        "Stopped")
+            echo "MSoffline" > $fifo
+            ;;
+    esac
+done &
+
+# number of clients
+xprop -spy -root _NET_CLIENT_LIST | while read -r line; do
+    noc=$(( `echo $line | wc -w` - 4 ))
+    echo "NOC$noc" > $fifo
+done &
+
+
+# client list
+# xprop -spy -root _NET_CLIENT_LIST | while read -r line; do
+xprop -spy -root _NET_ACTIVE_WINDOW | while read -r; do
+    line=$(xprop -root _NET_CLIENT_LIST)
+    id_list=(`echo $line | sed -e 's/,//g'`)
+ 
+    for id in ${id_list[@]:4}; do
+        name=$(xdotool getwindowname $id)
+        
+        if [ $(echo $name | wc -m) -gt 20 ]; then
+            buff+="${name:0:17}...    "
+        else
+            buff+="${name:0:20}    "
+        fi
+    done
+
+    echo "CLS$buff" > $fifo
+    buff=""
+done &
+
+# # active window
+# xprop -spy -root _NET_ACTIVE_WINDOW | while read -r line; do
+#     id=$(echo $line | awk '{print $5}')
+#     awin=$(xdotool getwindowname $id)
+#     echo "AWIN$(echo $awin | head --bytes 45)" > $fifo
+# done &
+
+# volume
+if [ "$(pamixer --get-mute)" == "true" ]; then # as init
+    echo "VOLmuted" > $fifo &
+else
+    echo "VOL$(pamixer --get-volume)%" > $fifo &
+fi
+
+pactl subscribe \
+    | grep --line-buffered "Event 'change' on sink" \
+    | while read -r evt; do
+    
+    if [ "$(pamixer --get-mute)" == "true" ]; then
+        echo "VOLmuted" > $fifo
+    else
+        echo "VOL$(pamixer --get-volume)%" > $fifo
+    fi
+done &
+
+# battery
+while true; do
+    bat=$(scripts/bat -l)
+    echo "BAT$bat" > $fifo
+    sleep 1m
+done &
+
+# date
+while true; do
+    dat=$(scripts/dat)
+    echo "DAT$dat" > $fifo
+    sleep 30
+done &
+
+tail -f $fifo | ./parser $conf | lemonbar \
+    -g $w\x$h\x$x\x$y \
+    -b \
+    -f $font \
+    -p \
+    -u $ulpx \
+    -B $bg \
+    -F $fg \
+    -U $fg 2>> $elog
+
